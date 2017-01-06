@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+       <context:annotation-config/>
+
+       <bean name="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+              <property name="driverClassName" value="org.h2.Driver"/>
+              <property name="url" value="jdbc:h2:~/Atelier/H2/data/lockTest3;MODE=ORACLE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE"/>
+              <property name="username" value="SA"/>
+              <property name="password" value=""/>
+       </bean>
+
+       <bean name="entityManager" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
+              <property name="dataSource" ref="dataSource"/>
+              <property name="packagesToScan" value="org.javasel.models"/>
+              <property name="jpaVendorAdapter" ref="jpaVendor"/>
+       </bean>
+
+       <bean name="jpaVendor" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+              <property name="database" value="H2"/>
+              <property name="showSql" value="true"/>
+              <property name="generateDdl" value="true" />
+              <property name="databasePlatform" value="org.hibernate.dialect.H2Dialect"/>
+       </bean>
+
+       <bean name="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+              <property name="entityManagerFactory" ref="entityManager"/>
+       </bean>
+
+       <jpa:repositories base-package="org.javasel.dao" transaction-manager-ref="transactionManager" entity-manager-factory-ref="entityManager"/>
+
+       <bean name="functionnalLockManager" class="org.javasel.lock.FunctionnalLockManager"/>
+
+
+</beans>
