@@ -1,15 +1,12 @@
 package org.javasel.lock;
 
-import org.hibernate.dialect.lock.OptimisticEntityLockException;
 import org.javasel.models.FunctionnalLock;
-import org.junit.Test;
 import org.junit.Assert;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by berzeker on 16/08/16.
@@ -20,7 +17,7 @@ public class FunctionnalLockManagerTest {
 
 
     @Autowired
-    FunctionnalLockManager functionnalLockManager;
+    FunctionnalLockManagerImpl functionnalLockManager;
 
     @Test
     public void createLock() {
@@ -48,18 +45,29 @@ public class FunctionnalLockManagerTest {
     @Test
     public void testFunctionnalLock() throws InterruptedException {
         System.out.println("DEBUT TEST");
-        FunctionnalLock lock = functionnalLockManager.getFunctionnalLock("TEST9");
+        
+        
+        FunctionnalLock lock = functionnalLockManager.createLock("TEST9");
         functionnalLockManager.desactivateLock(lock);
-        lock = functionnalLockManager.createLock("TEST9");
 
         LockTesterThread lockThread = new LockTesterThread();
-        Thread[] threads = new Thread[30];
+        Thread[] threads = new Thread[10];
 
-        for (int i=0; i<30; i++) {
+        for (int i=0; i<10; i++) {
             threads[i] = new Thread(lockThread);
         }
 
-        for (int i=0; i<30; i++) {
+        for (int i=0; i<10; i++) {
+            threads[i].start();
+        }
+        
+     // on attend que chaque thread ait fini son exécution
+        for (int i =  0 ; i < threads.length ; i++) {
+            // jette InterruptedException
+            threads[i].join();
+        }
+        
+        for (int i=0; i<10; i++) {
             threads[i].start();
         }
 
@@ -89,21 +97,14 @@ public class FunctionnalLockManagerTest {
 
         FunctionnalLock lock = functionnalLockManager.getFunctionnalLock("TEST9");
 
-        System.out.println(lock.getActif());
-
         if (Boolean.FALSE.equals(lock.getActif())) {
-            try {
-                lock = functionnalLockManager.activateLock(lock);
-                if (lock.getActif()) {
-                    System.out.println("** " + Thread.currentThread().getName());
-                    functionnalLockManager.getFunctionnalLock("TEST9");
-                    functionnalLockManager.desactivateLock(lock);
-                }
-            } catch (ObjectOptimisticLockingFailureException ex) {
-                System.out.println("optimistic : " + Thread.currentThread().getName());
 
-            }
-
+	        lock = functionnalLockManager.activateLock(lock);
+	        if (lock!= null && lock.getActif()) {
+	            System.out.println("** " + Thread.currentThread().getName());
+	            functionnalLockManager.desactivateLock(lock);
+	        }   
+	        
         } else {
             System.out.println("****** " + Thread.currentThread().getName());
 

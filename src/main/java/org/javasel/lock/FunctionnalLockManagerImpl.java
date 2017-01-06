@@ -1,19 +1,22 @@
 package org.javasel.lock;
 
+import javax.persistence.NoResultException;
+
 import org.javasel.dao.FunctionnalLockDao;
 import org.javasel.models.FunctionnalLock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.persistence.NoResultException;
 
 /**
  * Created by berzeker on 07/08/16.
  */
-public class FunctionnalLockManager {
+class FunctionnalLockManagerImpl {
 
     @Autowired
-    FunctionnalLockDao functionnalLockDao;
+    private FunctionnalLockDao functionnalLockDao;
+    
+    private FunctionnalLockManagerImpl() {}
 
     public FunctionnalLock createLock(String name) {
 
@@ -48,13 +51,29 @@ public class FunctionnalLockManager {
 
     @Transactional
     FunctionnalLock activateLock(FunctionnalLock lock) {
+    	FunctionnalLock functionnalLock = null;
         lock.setActif(Boolean.TRUE);
-        return functionnalLockDao.save(lock);
+        try {
+        	functionnalLock = functionnalLockDao.save(lock);
+        } catch (ObjectOptimisticLockingFailureException ex) {
+        	System.out.println("conflit_activate" + Thread.currentThread().getName());
+        	functionnalLock = null;
+        }
+        return functionnalLock;
     }
 
+    @Transactional
     FunctionnalLock desactivateLock(FunctionnalLock lock) {
+    	FunctionnalLock functionnalLock = null;
         lock.setActif(Boolean.FALSE);
-        return functionnalLockDao.save(lock);
+        try {
+        	functionnalLock = functionnalLockDao.save(lock);
+        	System.out.println("Destroyed" + lock.getName());
+        } catch (ObjectOptimisticLockingFailureException ex) {
+        	System.out.println("conflit_desactivate" + Thread.currentThread().getName());
+        	functionnalLock = null;
+        }
+        return functionnalLock;
     }
 
     void flush() {

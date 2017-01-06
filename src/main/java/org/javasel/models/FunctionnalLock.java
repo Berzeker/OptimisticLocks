@@ -12,8 +12,6 @@ import java.util.Date;
 @Entity
 @Table(name = "FUNCTIONNAL_LOCK")
 @SequenceGenerator(name = "functionnalLockSeq", sequenceName = "FUNCTIONNAL_LOCK_SEQ")
-@Getter
-@Setter
 public class FunctionnalLock {
 
     @Id
@@ -38,5 +36,37 @@ public class FunctionnalLock {
     public FunctionnalLock(String name) {
         this.name = name;
     }
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Boolean getActif() {
+		return actif;
+	}
+
+	public void setActif(Boolean actif) {
+		this.actif = actif;
+	}
+
+	public Date getLastUpdate() {
+		return lastUpdate;
+	}
+
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
+	}
 
 }

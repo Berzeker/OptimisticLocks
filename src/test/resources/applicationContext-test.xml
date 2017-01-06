@@ -8,7 +8,7 @@
 
        <bean name="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
               <property name="driverClassName" value="org.h2.Driver"/>
-              <property name="url" value="jdbc:h2:~/Atelier/H2/data/lockTest3;MODE=ORACLE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE"/>
+              <property name="url" value="jdbc:h2:D:\lockTest3;MODE=ORACLE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE"/>
               <property name="username" value="SA"/>
               <property name="password" value=""/>
        </bean>
