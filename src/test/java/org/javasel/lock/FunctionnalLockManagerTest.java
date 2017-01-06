@@ -15,9 +15,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @ContextConfiguration(locations = {"classpath:applicationContext-test.xml"})
 public class FunctionnalLockManagerTest {
 
-
-    @Autowired
-    FunctionnalLockManagerImpl functionnalLockManager;
+	@Autowired
+    private FunctionnalLockManager functionnalLockManager;
 
     @Test
     public void createLock() {

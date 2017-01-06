@@ -11,12 +11,16 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Created by berzeker on 07/08/16.
  */
-class FunctionnalLockManagerImpl {
+class FunctionnalLockManagerImpl implements FunctionnalLockManager {
 
     @Autowired
     private FunctionnalLockDao functionnalLockDao;
     
     private FunctionnalLockManagerImpl() {}
+    
+    public static FunctionnalLockManager getInstance() {
+		return new FunctionnalLockManagerImpl();
+	}
 
     public FunctionnalLock createLock(String name) {
 
@@ -50,7 +54,7 @@ class FunctionnalLockManagerImpl {
     }
 
     @Transactional
-    FunctionnalLock activateLock(FunctionnalLock lock) {
+    public FunctionnalLock activateLock(FunctionnalLock lock) {
     	FunctionnalLock functionnalLock = null;
         lock.setActif(Boolean.TRUE);
         try {
@@ -63,7 +67,7 @@ class FunctionnalLockManagerImpl {
     }
 
     @Transactional
-    FunctionnalLock desactivateLock(FunctionnalLock lock) {
+    public FunctionnalLock desactivateLock(FunctionnalLock lock) {
     	FunctionnalLock functionnalLock = null;
         lock.setActif(Boolean.FALSE);
         try {
@@ -74,10 +78,6 @@ class FunctionnalLockManagerImpl {
         	functionnalLock = null;
         }
         return functionnalLock;
-    }
-
-    void flush() {
-        functionnalLockDao.flush();
     }
 
 }
