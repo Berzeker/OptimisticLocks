@@ -2,7 +2,6 @@ package org.javasel.lock;
 
 import javax.persistence.NoResultException;
 
-import org.javasel.dao.FunctionnalLockDao;
 import org.javasel.models.FunctionnalLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -16,65 +15,118 @@ class FunctionnalLockManagerImpl implements FunctionnalLockManager {
     @Autowired
     private FunctionnalLockDao functionnalLockDao;
     
+    private static final FunctionnalLockManager FUNCTIONNAL_LOCK_MANAGER = new FunctionnalLockManagerImpl();
+    
     private FunctionnalLockManagerImpl() {}
     
+    /**
+     * This method return an instance of the functional lock manager
+     * @return FunctionnalLockManagerImpl an instance of functional lock manager
+     */
     public static FunctionnalLockManager getInstance() {
-		return new FunctionnalLockManagerImpl();
+		return FUNCTIONNAL_LOCK_MANAGER;
 	}
 
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional
     public FunctionnalLock createLock(String name) {
-
-        FunctionnalLock functionnalLock = getFunctionnalLock(name);
-        if (functionnalLock == null) {
-            functionnalLock = new FunctionnalLock(name);
+    	
+        FunctionnalLock functionnalLock = null;
+		try {
+			functionnalLock = getFunctionnalLock(name);
+		} catch (NoLockFoundException e) {
+			functionnalLock = new FunctionnalLock(name);
             functionnalLock = functionnalLockDao.save(functionnalLock);
-        }
-
+		}
         return functionnalLock;
     }
 
-    public FunctionnalLock getFunctionnalLock(String name) {
+    /**
+     * {@inheritDoc}
+     * @throws NoLockFoundException 
+     */
+    public FunctionnalLock getFunctionnalLock(String name) throws NoLockFoundException {
 
         FunctionnalLock functionnalLock;
         try {
             functionnalLock = functionnalLockDao.findByName(name);
         }
         catch (NoResultException ex) {
-            functionnalLock = null;
+            throw new NoLockFoundException(name);
         }
         return functionnalLock;
     }
 
-    public boolean destroyLock(FunctionnalLock functionnalLock) {
+    /**
+     * {@inheritDoc}
+     * @throws NoLockFoundException 
+     */
+    public boolean destroyLock(FunctionnalLock functionnalLock) throws NoLockFoundException {
         functionnalLockDao.delete(functionnalLock);
-        FunctionnalLock functionnalLockTmp = functionnalLockDao.findByName(functionnalLock.getName());
-        if (functionnalLock != null)
+        FunctionnalLock functionnalLockTmp = getFunctionnalLock(functionnalLock.getName());
+        if (functionnalLockTmp != null)
             return false;
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     * @throws NoLockFoundException 
+     */
     @Transactional
-    public FunctionnalLock activateLock(FunctionnalLock lock) {
-    	FunctionnalLock functionnalLock = null;
-        lock.setActif(Boolean.TRUE);
-        try {
-        	functionnalLock = functionnalLockDao.save(lock);
-        } catch (ObjectOptimisticLockingFailureException ex) {
-        	System.out.println("conflit_activate" + Thread.currentThread().getName());
-        	functionnalLock = null;
-        }
+    public FunctionnalLock activateLock(FunctionnalLock lock) throws AlreadyLockedException, NoLockFoundException {
+    		
+    	FunctionnalLock functionnalLock = getFunctionnalLock(lock.getName());
+    	
+    	
+    	if (functionnalLock != null && !functionnalLock.getActif()) {
+    		functionnalLock.setActif(Boolean.TRUE);
+            try {
+            	functionnalLock = functionnalLockDao.save(functionnalLock);
+            } catch (ObjectOptimisticLockingFailureException ex) {
+            	throw new AlreadyLockedException(functionnalLock.getName());
+            }
+    	}
+    	if (functionnalLock != null && functionnalLock.getActif()) {
+    		throw new AlreadyLockedException(functionnalLock.getName());
+    	}
+        return functionnalLock;
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Transactional
+    public FunctionnalLock activateLockByName(String name) throws AlreadyLockedException, NoLockFoundException {
+    		
+    	FunctionnalLock functionnalLock = getFunctionnalLock(name);
+    	if (functionnalLock != null && !functionnalLock.getActif()) {
+    		functionnalLock.setActif(Boolean.TRUE);
+            try {
+            	functionnalLock = functionnalLockDao.save(functionnalLock);
+            } catch (ObjectOptimisticLockingFailureException ex) {
+            	throw new AlreadyLockedException(functionnalLock.getName());
+            }
+    	}
+    	if (functionnalLock != null && functionnalLock.getActif()) {
+    		throw new AlreadyLockedException(functionnalLock.getName());
+    	}
         return functionnalLock;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Transactional
-    public FunctionnalLock desactivateLock(FunctionnalLock lock) {
+    public FunctionnalLock deactivateLock(FunctionnalLock lock) {
     	FunctionnalLock functionnalLock = null;
         lock.setActif(Boolean.FALSE);
         try {
         	functionnalLock = functionnalLockDao.save(lock);
-        	System.out.println("Destroyed" + lock.getName());
         } catch (ObjectOptimisticLockingFailureException ex) {
-        	System.out.println("conflit_desactivate" + Thread.currentThread().getName());
+        	System.out.println("lock " + lock.getName() + " already deactivated");
         	functionnalLock = null;
         }
         return functionnalLock;

@@ -14,29 +14,31 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:applicationContext-test.xml"})
 public class FunctionnalLockManagerTest {
+	
+	private static int compteur = 0;
 
 	@Autowired
     private FunctionnalLockManager functionnalLockManager;
 
     @Test
     public void createLock() {
-        FunctionnalLock functionnalLock = functionnalLockManager.createLock("TEST8");
+        FunctionnalLock functionnalLock = functionnalLockManager.createLock("TEST22");
         Assert.assertNotNull(functionnalLock);
     }
 
     @Test
-    public void activateLock() {
+    public void activateLock() throws AlreadyLockedException, NoLockFoundException {
         FunctionnalLock lockTest = functionnalLockManager.createLock("TEST");
         functionnalLockManager.activateLock(lockTest);
         Assert.assertEquals(true, lockTest.getActif());
     }
 
     @Test
-    public void desactivateLock() {
+    public void desactivateLock() throws AlreadyLockedException, NoLockFoundException {
         FunctionnalLock lockTest = functionnalLockManager.createLock("TEST");
         functionnalLockManager.activateLock(lockTest);
         Assert.assertEquals(true, lockTest.getActif());
-        functionnalLockManager.desactivateLock(lockTest);
+        functionnalLockManager.deactivateLock(lockTest);
         Assert.assertEquals(false, lockTest.getActif());
     }
 
@@ -46,8 +48,7 @@ public class FunctionnalLockManagerTest {
         System.out.println("DEBUT TEST");
         
         
-        FunctionnalLock lock = functionnalLockManager.createLock("TEST9");
-        functionnalLockManager.desactivateLock(lock);
+        functionnalLockManager.createLock("TEST10");
 
         LockTesterThread lockThread = new LockTesterThread();
         Thread[] threads = new Thread[10];
@@ -67,6 +68,10 @@ public class FunctionnalLockManagerTest {
         }
         
         for (int i=0; i<10; i++) {
+            threads[i] = new Thread(lockThread);
+        }
+        
+        for (int i=0; i<10; i++) {
             threads[i].start();
         }
 
@@ -75,6 +80,8 @@ public class FunctionnalLockManagerTest {
             // jette InterruptedException
             threads[i].join();
         }
+        
+        
 
         System.out.println("FIN TEST");
     }
@@ -83,30 +90,32 @@ public class FunctionnalLockManagerTest {
     class LockTesterThread implements Runnable {
         public void run() {
             try {
-                System.out.println("HELLO : " + Thread.currentThread().getName());
                 testLockMethod();
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            } catch (NoLockFoundException e) {
+				System.out.println(e.getMessage());
+			}
+        }
+        
+        public void testLockMethod() throws InterruptedException, NoLockFoundException {
+        	
+        	FunctionnalLock lock;
+    		try {
+    			
+    			lock = functionnalLockManager.activateLockByName("TEST10");
+    			compteur++;
+            	Assert.assertEquals(1, compteur);
+            	compteur--;
+                functionnalLockManager.deactivateLock(lock);	
+                
+    		} catch (AlreadyLockedException e) {
+    			System.out.println(e.getMessage());
+    		}
         }
     }
 
 
-    public void testLockMethod() throws InterruptedException {
-
-        FunctionnalLock lock = functionnalLockManager.getFunctionnalLock("TEST9");
-
-        if (Boolean.FALSE.equals(lock.getActif())) {
-
-	        lock = functionnalLockManager.activateLock(lock);
-	        if (lock!= null && lock.getActif()) {
-	            System.out.println("** " + Thread.currentThread().getName());
-	            functionnalLockManager.desactivateLock(lock);
-	        }   
-	        
-        } else {
-            System.out.println("****** " + Thread.currentThread().getName());
-
-        }
-    }
+    
+    
 }

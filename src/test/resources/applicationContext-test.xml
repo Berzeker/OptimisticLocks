@@ -30,9 +30,9 @@
               <property name="entityManagerFactory" ref="entityManager"/>
        </bean>
 
-       <jpa:repositories base-package="org.javasel.dao" transaction-manager-ref="transactionManager" entity-manager-factory-ref="entityManager"/>
+       <jpa:repositories base-package="org.javasel.lock" transaction-manager-ref="transactionManager" entity-manager-factory-ref="entityManager"/>
 
-       <bean name="functionnalLockManager" class="org.javasel.lock.FunctionnalLockManagerImpl" factory-method="getInstance"/>
+       <bean name="functionnalLockManager" class="org.javasel.lock.FunctionnalLockManagerImpl" factory-method="getInstance" scope="singleton"/>
 
 
 </beans>
