@@ -1,7 +1,5 @@
 package org.javasel.lock;
 
-import javax.persistence.NoResultException;
-
 import org.javasel.models.FunctionnalLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -61,12 +59,16 @@ class FunctionnalLockManagerImpl implements FunctionnalLockManager {
      * {@inheritDoc}
      */
     @Transactional
-    public boolean destroyLock(FunctionnalLock functionnalLock) throws NoLockFoundException {
+    public boolean destroyLock(FunctionnalLock functionnalLock) {
+    	boolean result = false;
         functionnalLockDao.delete(functionnalLock);
-        FunctionnalLock functionnalLockTmp = getFunctionnalLock(functionnalLock.getName());
-        if (functionnalLockTmp != null)
-            return false;
-        return true;
+        try {
+        	getFunctionnalLock(functionnalLock.getName());
+        	result = false;
+        } catch (NoLockFoundException ex) {
+        	result = true;
+        }
+        return result;
     }
 
     /**
@@ -85,8 +87,7 @@ class FunctionnalLockManagerImpl implements FunctionnalLockManager {
             } catch (ObjectOptimisticLockingFailureException ex) {
             	throw new AlreadyLockedException(functionnalLock.getName());
             }
-    	}
-    	if (functionnalLock != null && functionnalLock.getActif()) {
+    	} else if (functionnalLock != null && functionnalLock.getActif()) {
     		throw new AlreadyLockedException(functionnalLock.getName());
     	}
         return functionnalLock;
@@ -106,8 +107,7 @@ class FunctionnalLockManagerImpl implements FunctionnalLockManager {
             } catch (ObjectOptimisticLockingFailureException ex) {
             	throw new AlreadyLockedException(functionnalLock.getName());
             }
-    	}
-    	if (functionnalLock != null && functionnalLock.getActif()) {
+    	} else if (functionnalLock != null && functionnalLock.getActif()) {
     		throw new AlreadyLockedException(functionnalLock.getName());
     	}
         return functionnalLock;

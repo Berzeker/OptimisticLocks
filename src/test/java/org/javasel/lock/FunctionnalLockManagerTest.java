@@ -26,31 +26,70 @@ public class FunctionnalLockManagerTest {
 
     @Test
     public void createLock() {
-        FunctionnalLock functionnalLock = functionnalLockManager.createLock("TEST22");
-        Assert.assertNotNull(functionnalLock);
+        FunctionnalLock lock = functionnalLockManager.createLock("LOCK1");
+        Assert.assertNotNull(lock);
+    }
+    
+    @Test
+    public void getFunctionnalLock() {
+    	String lockName = "LOCK2";
+    	FunctionnalLock lock = functionnalLockManager.createLock(lockName);
+    	try {
+			lock = functionnalLockManager.getFunctionnalLock(lockName);
+			Assert.assertNotNull(lock);
+		} catch (NoLockFoundException e) {
+			Assert.fail(e.getMessage());
+		}
     }
 
     @Test
-    public void activateLock() throws AlreadyLockedException, NoLockFoundException {
-        FunctionnalLock lockTest = functionnalLockManager.createLock("TEST");
-        functionnalLockManager.activateLock(lockTest);
-        Assert.assertEquals(true, lockTest.getActif());
+    public void activateLock() throws AlreadyLockedException {
+    	try {
+	        FunctionnalLock lock = functionnalLockManager.createLock("LOCK3");
+	        lock = functionnalLockManager.activateLock(lock);
+	        Assert.assertEquals(true, lock.getActif());
+    	} catch (NoLockFoundException e) {
+    		Assert.fail(e.getMessage());
+		}
     }
-
+    
     @Test
-    public void desactivateLock() throws AlreadyLockedException, NoLockFoundException {
-        FunctionnalLock lockTest = functionnalLockManager.createLock("TEST");
-        functionnalLockManager.activateLock(lockTest);
-        Assert.assertEquals(true, lockTest.getActif());
-        functionnalLockManager.deactivateLock(lockTest);
-        Assert.assertEquals(false, lockTest.getActif());
+    public void activateLockByName() throws AlreadyLockedException {
+    	try {
+    		String lockName = "LOCK4";
+	        FunctionnalLock lock = functionnalLockManager.createLock(lockName);
+	        lock = functionnalLockManager.activateLockByName(lockName);
+	        Assert.assertEquals(true, lock.getActif());
+    	} catch (NoLockFoundException e) {
+    		Assert.fail(e.getMessage());
+		}
     }
-
-
+    
+    @Test
+    public void desactivateLock() throws AlreadyLockedException {
+    	try {
+	        FunctionnalLock lock = functionnalLockManager.createLock("LOCK5");
+	        lock = functionnalLockManager.activateLock(lock);
+	        Assert.assertEquals(true, lock.getActif());
+	        lock = functionnalLockManager.deactivateLock(lock);
+	        Assert.assertEquals(false, lock.getActif());
+    	} catch (NoLockFoundException e) {
+    		Assert.fail(e.getMessage());
+		}
+    }
+    
+    @Test
+    public void destroyLock() {
+    	FunctionnalLock lock = functionnalLockManager.createLock("LOCK6");
+    	Assert.assertNotNull(lock);
+    	boolean result = functionnalLockManager.destroyLock(lock);
+    	Assert.assertEquals(true, result);
+    }
+    
     @Test
     public void testFunctionnalLock() {
 
-        functionnalLockManager.createLock("TEST10");
+        functionnalLockManager.createLock("LOCK");
 
         for (int i = 0; i < 10; i++)
             taskExecutor.execute(new LockTesterThread());
@@ -69,7 +108,6 @@ public class FunctionnalLockManagerTest {
         }
     }
 
-
     class LockTesterThread implements Runnable {
         public void run() {
             try {
@@ -86,7 +124,7 @@ public class FunctionnalLockManagerTest {
         	FunctionnalLock lock;
     		try {
     			
-    			lock = functionnalLockManager.activateLockByName("TEST10");
+    			lock = functionnalLockManager.activateLockByName("LOCK");
     			compteur++;
             	Assert.assertEquals(1, compteur);
             	compteur--;

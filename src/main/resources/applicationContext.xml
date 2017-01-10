@@ -5,7 +5,7 @@
 
        <bean name="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
               <property name="driverClassName" value="org.h2.Driver"/>
-              <property name="url" value="jdbc:h2:~/Atelier/H2/data/lockTest;MODE=ORACLE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE"/>
+              <property name="url" value="jdbc:h2:mem:dblock;MODE=ORACLE;AUTO_SERVER=FALSE;DB_CLOSE_ON_EXIT=TRUE;DB_CLOSE_DELAY=-1"/>
               <property name="username" value="SA"/>
               <property name="password" value=""/>
        </bean>
@@ -26,7 +26,9 @@
               <property name="entityManagerFactory" ref="entityManager"/>
        </bean>
 
-       <jpa:repositories base-package="org.javasel.dao" transaction-manager-ref="transactionManager"/>
+       <jpa:repositories base-package="org.javasel.lock" transaction-manager-ref="transactionManager" entity-manager-factory-ref="entityManager"/>
+       
+       <bean name="functionnalLockManager" class="org.javasel.lock.FunctionnalLockManagerImpl" factory-method="getInstance" scope="singleton"/>
 
 
 </beans>

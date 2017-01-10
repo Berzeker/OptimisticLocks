@@ -17,7 +17,7 @@ public interface FunctionnalLockManager {
      * This method delete a lock by the given name.
 	 * @throws NoLockFoundException No Lock founded
      */
-	boolean destroyLock(FunctionnalLock functionnalLock) throws NoLockFoundException;
+	boolean destroyLock(FunctionnalLock functionnalLock);
 	
 	/**
      * This method search an optimistic lock by the given name.
