@@ -49,11 +49,9 @@ class FunctionnalLockManagerImpl implements FunctionnalLockManager {
      */
     public FunctionnalLock getFunctionnalLock(String name) throws NoLockFoundException {
 
-        FunctionnalLock functionnalLock;
-        try {
-            functionnalLock = functionnalLockDao.findByName(name);
-        }
-        catch (NoResultException ex) {
+        FunctionnalLock functionnalLock = functionnalLockDao.findByName(name);
+
+        if (functionnalLock == null) {
             throw new NoLockFoundException(name);
         }
         return functionnalLock;
@@ -61,8 +59,8 @@ class FunctionnalLockManagerImpl implements FunctionnalLockManager {
 
     /**
      * {@inheritDoc}
-     * @throws NoLockFoundException 
      */
+    @Transactional
     public boolean destroyLock(FunctionnalLock functionnalLock) throws NoLockFoundException {
         functionnalLockDao.delete(functionnalLock);
         FunctionnalLock functionnalLockTmp = getFunctionnalLock(functionnalLock.getName());
@@ -73,7 +71,6 @@ class FunctionnalLockManagerImpl implements FunctionnalLockManager {
 
     /**
      * {@inheritDoc}
-     * @throws NoLockFoundException 
      */
     @Transactional
     public FunctionnalLock activateLock(FunctionnalLock lock) throws AlreadyLockedException, NoLockFoundException {

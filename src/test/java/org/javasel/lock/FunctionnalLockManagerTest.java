@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -19,6 +20,9 @@ public class FunctionnalLockManagerTest {
 
 	@Autowired
     private FunctionnalLockManager functionnalLockManager;
+
+    @Autowired
+    private ThreadPoolTaskExecutor taskExecutor;
 
     @Test
     public void createLock() {
@@ -44,46 +48,25 @@ public class FunctionnalLockManagerTest {
 
 
     @Test
-    public void testFunctionnalLock() throws InterruptedException {
-        System.out.println("DEBUT TEST");
-        
-        
+    public void testFunctionnalLock() {
+
         functionnalLockManager.createLock("TEST10");
 
-        LockTesterThread lockThread = new LockTesterThread();
-        Thread[] threads = new Thread[10];
+        for (int i = 0; i < 10; i++)
+            taskExecutor.execute(new LockTesterThread());
 
-        for (int i=0; i<10; i++) {
-            threads[i] = new Thread(lockThread);
+        for (;;) {
+            int cout = taskExecutor.getActiveCount();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            if (cout == 0) {
+                taskExecutor.shutdown();
+                break;
+            }
         }
-
-        for (int i=0; i<10; i++) {
-            threads[i].start();
-        }
-        
-     // on attend que chaque thread ait fini son exécution
-        for (int i =  0 ; i < threads.length ; i++) {
-            // jette InterruptedException
-            threads[i].join();
-        }
-        
-        for (int i=0; i<10; i++) {
-            threads[i] = new Thread(lockThread);
-        }
-        
-        for (int i=0; i<10; i++) {
-            threads[i].start();
-        }
-
-        // on attend que chaque thread ait fini son exécution
-        for (int i =  0 ; i < threads.length ; i++) {
-            // jette InterruptedException
-            threads[i].join();
-        }
-        
-        
-
-        System.out.println("FIN TEST");
     }
 
 
@@ -115,7 +98,4 @@ public class FunctionnalLockManagerTest {
         }
     }
 
-
-    
-    
 }
