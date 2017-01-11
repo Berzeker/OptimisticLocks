@@ -39,7 +39,7 @@ Information connection database :
 > url JDBC : jdbc:h2:mem:dblocktest;MODE=ORACLE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=TRUE;DB_CLOSE_DELAY=-1
 > name user : sa
     
-Once connected on database, update the status of the lock by replacing "<name of lock>" with the name of the specified lock.
+Once connected on database, update the status of the lock by replacing "\<name of lock\>" with the name of the specified lock.
 
 	update FUNCTIONNAL_LOCK set ACTIF = 'FALSE' where NAME = '<name of lock>';
 	commit;
