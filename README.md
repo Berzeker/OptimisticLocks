@@ -36,7 +36,8 @@ By connecting in the embedded webserver console
 
 Information connection database :
 
-> url JDBC : jdbc:h2:mem:dblocktest;MODE=ORACLE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=TRUE;DB_CLOSE_DELAY=-1
+> url JDBC : jdbc:h2:mem:dblocktest;MODE=ORACLE;AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=TRUE;DB_CLOSE_DELAY=-1 <br/>
+
 > name user : sa
     
 Once connected on database, update the status of the lock by replacing "\<name of lock\>" with the name of the specified lock.
