@@ -6,7 +6,7 @@
 
        <context:annotation-config/>
 
-       <bean name="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+       <bean name="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" depends-on="h2server">
               <property name="driverClassName" value="org.h2.Driver"/>
               <property name="url" value="jdbc:h2:mem:dblocktest;MODE=ORACLE;AUTO_SERVER=FALSE;DB_CLOSE_ON_EXIT=TRUE;DB_CLOSE_DELAY=-1"/>
               <property name="username" value="SA"/>
@@ -39,5 +39,13 @@
               <property name="maxPoolSize" value="10"/>
               <property name="waitForTasksToCompleteOnShutdown" value="true"/>
        </bean>
+       
+       <bean id="h2server" class="org.h2.tools.Server" factory-method="createTcpServer" init-method="start" destroy-method="stop" depends-on="h2WebServer">
+       		<constructor-arg value="-tcp,-tcpAllowOthers,-tcpPort,9906"/>
+       </bean>
+       
+       <bean id="h2WebServer" class="org.h2.tools.Server" factory-method="createWebServer" init-method="start" destroy-method="stop">
+    		<constructor-arg value="-web,-webAllowOthers,-webPort,8807"/>
+	   </bean>
 
 </beans>

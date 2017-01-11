@@ -25,8 +25,9 @@ public class FunctionnalLockManagerTest {
     private ThreadPoolTaskExecutor taskExecutor;
 
     @Test
-    public void createLock() {
+    public void createLock() throws InterruptedException {
         FunctionnalLock lock = functionnalLockManager.createLock("LOCK1");
+        Thread.sleep(120000);
         Assert.assertNotNull(lock);
     }
     
