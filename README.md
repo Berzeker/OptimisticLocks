@@ -36,7 +36,7 @@ By connecting in the embedded webserver console
     
 update the status of the lock, by replacing <name of lock> with the name of the specified lock.
 
-	update FUNCTIONNAL_LOCK set ACTIF = 'FALSE' where name = '<name of lock>'
+	update FUNCTIONNAL_LOCK set ACTIF = 'FALSE' where NAME = '<name of lock>';
 	commit;
 
 
